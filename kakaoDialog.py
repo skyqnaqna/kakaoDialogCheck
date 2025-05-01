@@ -9,16 +9,26 @@ def check_authentication_from_file(file_path, keywords, duration, isDurationFixe
     already_authenticated = defaultdict(set)
 
     today = datetime.now()
-    todayMidnight = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    todayMidnight = today.replace(hour=23, minute=59, second=59, microsecond=0)
+
     if not duration:
       one_week_ago = todayMidnight
     else:
       one_week_ago = todayMidnight - timedelta(days=duration)
+
+    endDate = todayMidnight.strftime("%m.%d")
+
     if isDurationFixed:
       monday = todayMidnight - timedelta(days = todayMidnight.weekday())
       if monday != todayMidnight:
         monday = monday.replace(hour=23, minute=59, second=59, microsecond=0)
       one_week_ago = monday - timedelta(days=7)
+      endDate = monday.strftime("%m.%d")
+
+    startDate = (one_week_ago + timedelta(days = 1)).strftime("%m.%d")
+    date_text.delete(1.0, tk.END)
+    date_text.insert(tk.CURRENT,f"인증 기간: {startDate}~{endDate}\n")
+
 
     try:
       with open(file_path, 'r', encoding='utf-8') as file:
@@ -135,7 +145,8 @@ def load_file():
 
 root = tk.Tk()
 root.title("운동 인증 체크 앱")
-root.geometry("400x400")
+root.geometry("400x600")
+
 
 keyword_frame = tk.Frame(root)
 keyword_frame.pack(pady=10)
@@ -161,10 +172,13 @@ duration_frame.pack(pady=10)
 duration_label = tk.Label(duration_frame, text="기간 입력 (단위는 일):")
 duration_label.pack(side=tk.LEFT)
 
+date_text = tk.Text(root, height=1, width=30)
+date_text.pack(pady=10)
+
 duration_entry = tk.Entry(duration_frame, width=30)
 duration_entry.pack(side=tk.LEFT)
 
-is_pc_selected = tk.BooleanVar(value=False)
+is_pc_selected = tk.BooleanVar(value=True)
 
 pc_button = tk.Radiobutton(root, text="PC", variable=is_pc_selected, value=True)
 mobile_button = tk.Radiobutton(root, text="Mobile", variable=is_pc_selected, value=False)
@@ -175,7 +189,7 @@ mobile_button.pack(anchor=tk.W)
 load_button = tk.Button(root, text="텍스트 파일 열기", command=load_file)
 load_button.pack(pady=10)
 
-output_text = tk.Text(root, height=15, width=50)
+output_text = tk.Text(root, height=25, width=50)
 output_text.pack(pady=10)
 
 root.mainloop()
